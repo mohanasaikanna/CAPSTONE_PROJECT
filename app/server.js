@@ -57,7 +57,7 @@ app.get('/', (req, res) => {
     </head>
     <body>
       <div class="card">
-        <h1>🚀 DevOps Capstone</h1>
+        <h1> DevOps Capstone</h1>
         <p>End-to-end CI/CD pipeline — Node.js · Docker · Jenkins · AWS</p>
         <div class="grid">
           <span class="badge">GitHub</span>
