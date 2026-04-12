@@ -16,7 +16,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $IMAGE_NAME:latest ."
+                dir('app') {
+                    sh "docker build -t $IMAGE_NAME:latest ."
+                }
             }
         }
 
@@ -36,11 +38,15 @@ pipeline {
 
         stage('Deploy Container') {
             steps {
-                sh """
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-                docker run -d -p 3000:3000 --name $CONTAINER_NAME $IMAGE_NAME:latest
-                """
+                sh '''
+                echo "Cleaning port 3000..."
+
+                docker ps -q --filter "publish=3000" | xargs -r docker stop || true
+                docker ps -q --filter "publish=3000" | xargs -r docker rm || true
+
+                echo "Starting container..."
+                docker run -d -p 3000:3000 --name capstone-app saikanna14/devops-app:latest
+                '''
             }
         }
     }
