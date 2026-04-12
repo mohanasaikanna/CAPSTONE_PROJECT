@@ -1,4 +1,14 @@
-app.get('/', (req, res) => {
+const express = require("express");
+const path = require("path");
+const os = require("os");
+
+const app = express();
+const PORT = 3000;
+
+/* =========================
+   MAIN DASHBOARD ROUTE
+========================= */
+app.get("/", (req, res) => {
   res.send(`
   <!DOCTYPE html>
   <html lang="en">
@@ -92,17 +102,15 @@ app.get('/', (req, res) => {
 
     <div class="container">
 
-      <!-- Status -->
       <div class="section">
         <div class="card">
           <h2>System Status</h2>
           <p class="status">Application running successfully</p>
-          <p>Hostname: ${require('os').hostname()}</p>
+          <p>Hostname: ${os.hostname()}</p>
           <p>Uptime: ${Math.floor(process.uptime())} seconds</p>
         </div>
       </div>
 
-      <!-- Services -->
       <div class="section">
         <h2>Services</h2>
         <div class="grid">
@@ -115,7 +123,6 @@ app.get('/', (req, res) => {
         </div>
       </div>
 
-      <!-- Links -->
       <div class="section">
         <div class="card">
           <h2>Monitoring Links</h2>
@@ -127,12 +134,13 @@ app.get('/', (req, res) => {
         </div>
       </div>
 
-      <!-- Scrollable Section -->
       <div class="section">
         <div class="card">
           <h2>System Logs</h2>
           <div class="scroll-box">
-            ${Array.from({length: 30}).map((_, i) => `<p>Log Entry ${i+1}: System running normally</p>`).join('')}
+            ${Array.from({length: 30})
+              .map((_, i) => `<p>Log Entry ${i+1}: System running normally</p>`)
+              .join('')}
           </div>
         </div>
       </div>
@@ -146,4 +154,29 @@ app.get('/', (req, res) => {
   </body>
   </html>
   `);
+});
+app.get("/health", (req, res) => {
+  res.json({
+    status: "UP",
+    uptime: process.uptime(),
+    timestamp: new Date()
+  });
+});
+app.get("/api/info", (req, res) => {
+  res.json({
+    app: "DevOps Dashboard",
+    node: process.version,
+    platform: os.platform(),
+    hostname: os.hostname()
+  });
+});
+app.get("/metrics", (req, res) => {
+  res.send(`
+# HELP uptime_seconds Application uptime
+# TYPE uptime_seconds counter
+uptime_seconds ${process.uptime()}
+  `);
+});
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
