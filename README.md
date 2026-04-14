@@ -1,255 +1,226 @@
-# DevOps Capstone Project
-**End-to-End CI/CD Pipeline — Node.js · Docker · Jenkins · AWS · Prometheus · Grafana**
+DevOps Capstone Project
+
+End-to-End CI/CD Pipeline using Node.js, Docker, Jenkins, AWS, Prometheus, and Grafana
+
+
+Introduction
+
+This project demonstrates a complete DevOps workflow by automating the process of building, testing, deploying, and monitoring a Node.js application. It reflects a real-world production setup where code changes are continuously integrated, validated, and delivered with minimal manual intervention.
+
+The implementation focuses on reliability, automation, and observability, which are essential principles in modern DevOps practices.
+
+
+Objectives
+
+* Automate application delivery using a CI/CD pipeline
+* Containerize the application for consistent deployments
+* Deploy and manage services on AWS EC2
+* Monitor application and system performance
+* Implement basic self-healing and maintenance tasks
+
+
+Architecture Overview
+
+The system follows a continuous delivery pipeline:
+
+Developer → GitHub → Jenkins → Docker Hub → AWS EC2 → Prometheus → Grafana
+
+1. Code is pushed to GitHub
+2. Jenkins detects changes and triggers the pipeline
+3. Application is built and tested
+4. Docker image is created and pushed to Docker Hub
+5. Application is deployed to EC2
+6. Prometheus collects metrics
+7. Grafana visualizes system and application performance
+
+ Technology Stack
+
+| Layer            | Tools            |
+| ---------------- | ---------------- |
+| Version Control  | GitHub           |
+| CI/CD            | Jenkins          |
+| Backend          | Node.js          |
+|                  |                  |
+| Containerization | Docker           |
+| Registry         | Docker Hub       |
+| Cloud Platform   | AWS EC2 (Ubuntu) |
+| Monitoring       | Prometheus       |
+| Visualization    | Grafana          |
+| Metrics Export   | Node Exporter    |
+|                  |                  |
+
+
+Repository Structure
+
+CAPSTONE_PROJECT/
+
+* app/
+  Contains the Node.js application, Dockerfile, and test cases
+
+* monitoring/
+  Includes Prometheus and Grafana configuration
+
+* scripts/
+  Automation scripts for EC2 setup, backups, and maintenance
+
+* Jenkinsfile
+  Defines the CI/CD pipeline
+
+* README.md
+  Project documentation
+
+
+Application Details
+
+The application is built using Express.js and includes:
+
+* A basic web interface
+* Health check endpoint for deployment validation
+* Prometheus metrics endpoint for monitoring
+* Simple API endpoint for application information
+
+API Endpoints
+
+| Endpoint  | Description                       |
+| --------- | --------------------------------- |
+| /         | Home page                         |
+| /health   | Returns application health status |
+| /metrics  | Exposes Prometheus metrics        |
+| /api/info | Returns application metadata      |
 
 ---
 
-## Project Overview
+CI/CD Pipeline
 
-A production-ready DevOps pipeline that automates the build, test, containerization, deployment, and monitoring of a Node.js web application.
+The Jenkins pipeline automates the entire delivery process through the following stages:
 
-```
-Developer pushes code
-       │
-       ▼
-   GitHub Repo
-       │
-       ▼  (webhook / poll)
-  Jenkins EC2
-  ┌────────────────────────────────┐
-  │  1. Checkout code              │
-  │  2. npm install                │
-  │  3. npm test (Jest)            │
-  │  4. docker build               │
-  │  5. docker push → Docker Hub   │
-  │  6. SSH → App EC2 → deploy     │
-  │  7. Health check               │
-  └────────────────────────────────┘
-       │
-       ▼
-   App EC2 (Docker container)
-       │
-       ▼
-  Prometheus scrapes /metrics
-       │
-       ▼
-  Grafana dashboard
-```
+1. Checkout source code from GitHub
+2. Install dependencies using npm
+3. Build Docker image
+4. Push image to Docker Hub
+5. Deploy the container to EC2 via SSH
+6. Perform health checks to verify deployment
+7. Clean up unused Docker resources
+
+This ensures that every code change is validated and deployed consistently.
+
+
+
+Docker Workflow
+
+The application is containerized to ensure consistent behavior across environments.
+
+Build Image
+
+docker build -t devops-app ./app
+
+Run Container
+
+docker run -d -p 3000:3000 --name devops-container devops-app
+
+The container exposes the application on port 3000.
 
 ---
 
-## Tech Stack
+AWS Deployment
 
-| Layer | Tool |
-|---|---|
-| Source Control | Git + GitHub |
-| CI/CD | Jenkins on EC2 |
-| Application | Node.js + Express |
-| Containerization | Docker + Docker Hub |
-| Infrastructure | AWS EC2 (Ubuntu 22.04) |
-| Monitoring | Prometheus + Grafana + Node Exporter |
-| Automation | Bash + Cron |
+The system is deployed using EC2 instances:
 
----
+* Jenkins Server for CI/CD
+* Application Server for running the containerized app
+* Monitoring Server for Prometheus and Grafana
 
-## Repository Structure
+### Security Group Configuration
 
-```
-devops-capstone/
-├── app/
-│   ├── server.js            # Express app with Prometheus metrics
-│   ├── package.json
-│   ├── Dockerfile
-│   ├── .dockerignore
-│   └── __tests__/
-│       └── server.test.js   # Jest unit tests
-├── monitoring/
-│   ├── docker-compose.yml   # Prometheus + Grafana + Node Exporter
-│   └── prometheus/
-│       └── prometheus.yml   # Scrape config
-├── scripts/
-│   ├── ec2-setup-jenkins.sh # Bootstrap Jenkins EC2
-│   ├── ec2-setup-app.sh     # Bootstrap App EC2
-│   ├── backup.sh            # Log/data backup script
-│   ├── cleanup-logs.sh      # Docker & log cleanup
-│   └── crontab-setup.sh     # Install cron jobs
-├── Jenkinsfile              # Full CI/CD pipeline
-└── README.md
-```
+| Port | Purpose       |
+| ---- | ------------- |
+| 22   | SSH access    |
+| 8080 | Jenkins       |
+| 3000 | Application   |
+| 9090 | Prometheus    |
+| 3001 | Grafana       |
+| 9100 | Node Exporter |
 
----
 
-## Quick Start — Run Locally
+Monitoring and Observability
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/devops-capstone.git
-cd devops-capstone
+Prometheus is used to collect metrics from:
 
-# 2. Run the Node.js app directly
-cd app
-npm install
-npm start
-# → http://localhost:3000
+* Node.js application (/metrics endpoint)
+* Node Exporter (system metrics)
 
-# 3. OR run with Docker
-docker build -t capstone-app .
-docker run -d -p 3000:3000 --name capstone-app capstone-app
-# → http://localhost:3000
+Grafana is used to visualize these metrics through dashboards.
 
-# 4. Run tests
-npm test
-```
+Running Monitoring Stack
 
----
-
-## AWS Setup — Step by Step
-
-### Prerequisites
-- AWS account with EC2 access
-- Two EC2 instances: **Jenkins EC2** and **App EC2** (Ubuntu 22.04, t2.micro or larger)
-- Security groups open:
-  - Jenkins EC2: ports 22, 8080
-  - App EC2: ports 22, 3000, 9100
-  - Monitoring EC2: ports 22, 9090, 3001
-
-### 1. Bootstrap Jenkins EC2
-
-```bash
-# SSH into Jenkins EC2
-ssh -i your-key.pem ubuntu@<jenkins-ec2-ip>
-
-# Clone repo and run setup
-git clone https://github.com/your-username/devops-capstone.git
-bash devops-capstone/scripts/ec2-setup-jenkins.sh
-```
-
-Access Jenkins at `http://<jenkins-ec2-ip>:8080`. Install these plugins:
-- **Git Plugin**
-- **Docker Pipeline**
-- **SSH Agent Plugin**
-- **Pipeline**
-
-### 2. Bootstrap App EC2
-
-```bash
-ssh -i your-key.pem ubuntu@<app-ec2-ip>
-git clone https://github.com/your-username/devops-capstone.git
-bash devops-capstone/scripts/ec2-setup-app.sh
-```
-
-### 3. Configure Jenkins Credentials
-
-In Jenkins → Manage Jenkins → Credentials → (global) → Add Credential:
-
-| ID | Type | Value |
-|---|---|---|
-| `dockerhub-credentials` | Username + Password | Your Docker Hub login |
-| `ec2-ssh-key` | SSH Username with Private Key | Your EC2 .pem key |
-
-### 4. Update Jenkinsfile
-
-Edit `Jenkinsfile` — replace placeholders:
-```groovy
-DOCKER_HUB_REPO = "your-dockerhub-username/devops-capstone"
-APP_EC2_HOST    = "your-app-ec2-public-ip"
-```
-
-### 5. Create Jenkins Pipeline Job
-
-1. New Item → Pipeline
-2. Pipeline Definition: **Pipeline script from SCM**
-3. SCM: Git → your GitHub repo URL
-4. Script Path: `Jenkinsfile`
-5. Save → Build Now
-
----
-
-## Monitoring Setup
-
-```bash
-# SSH into Monitoring EC2 (or use the Jenkins EC2)
-cd devops-capstone/monitoring
-
-# Edit prometheus/prometheus.yml — replace IP placeholders
-nano prometheus/prometheus.yml
-
-# Start the monitoring stack
+cd monitoring
 docker compose up -d
 
-# Access:
-# Prometheus → http://<monitoring-ec2-ip>:9090
-# Grafana    → http://<monitoring-ec2-ip>:3001  (admin / admin123)
-```
+Access
 
-**Grafana Dashboard setup:**
-1. Add Prometheus data source: `http://prometheus:9090`
-2. Import dashboard ID **1860** (Node Exporter Full)
-3. Import dashboard ID **11159** (Node.js Application)
+* Prometheus: http://:9090
+* Grafana: http://:3001
+
+Default Grafana credentials:
+Username: admin
+Password: admin123
 
 ---
 
-## Cron Jobs Setup (on App EC2)
+Automation with Cron Jobs
 
-```bash
-# Install cron jobs
+Basic operational tasks are automated using cron jobs:
+
+* Daily backup of logs
+* Cleanup of old logs and Docker resources
+* Periodic health checks with automatic container restart
+
+To install cron jobs:
+
 sudo bash scripts/crontab-setup.sh
 
-# Verify
-crontab -l
-```
 
-| Schedule | Job |
-|---|---|
-| Daily at 2:00 AM | Backup container logs to `/var/backups/capstone` + S3 |
-| Daily at 3:00 AM | Clean old logs + prune Docker resources |
-| Every 5 minutes | Health check — auto-restart container if unhealthy |
+Testing
 
----
+The project uses Jest for unit testing. Tests are executed as part of the CI/CD pipeline to ensure code quality before deployment.
 
-## CI/CD Flow
 
-```
-git push origin main
-        │
-        ▼ (poll / webhook)
-   Jenkins detects change
-        │
-  ┌─────▼──────┐
-  │  Checkout  │ ← git clone
-  └─────┬──────┘
-        │
-  ┌─────▼──────────────┐
-  │  Install + Test    │ ← npm ci && npm test
-  └─────┬──────────────┘
-        │
-  ┌─────▼──────────────┐
-  │  Docker Build      │ ← docker build -t repo:BUILD_NUMBER
-  └─────┬──────────────┘
-        │
-  ┌─────▼──────────────┐
-  │  Push to Hub       │ ← docker push
-  └─────┬──────────────┘
-        │
-  ┌─────▼──────────────┐
-  │  Deploy to EC2     │ ← SSH → docker run
-  └─────┬──────────────┘
-        │
-  ┌─────▼──────────────┐
-  │  Health Check      │ ← curl /health → 200 OK
-  └─────┬──────────────┘
-        │
-  ┌─────▼──────────────┐
-  │  Cleanup           │ ← docker image prune
-  └────────────────────┘
-```
+Running the Project Locally
 
----
+Clone the repository and start the application:
 
-## API Endpoints
+git clone https://github.com/mohanasaikanna/CAPSTONE_PROJECT.git
+cd CAPSTONE_PROJECT/app
 
-| Route | Description |
-|---|---|
-| `GET /` | Web UI |
-| `GET /health` | Health check (JSON) |
-| `GET /metrics` | Prometheus metrics |
-| `GET /api/info` | App info (JSON) |
+npm install
+npm start
+
+The application will be available at:
+
+http://localhost:3000
+
+Key Outcomes
+
+* Automated CI/CD pipeline from code commit to deployment
+* Containerized application using Docker
+* Cloud deployment on AWS EC2
+* Real-time monitoring using Prometheus and Grafana
+* Basic self-healing through automation
+
+
+Future Improvements
+
+* Deploy using Kubernetes for scalability
+* Use Terraform for infrastructure provisioning
+* Configure HTTPS with a reverse proxy
+* Add alerting mechanisms (email or messaging integrations)
+* Implement advanced deployment strategies such as blue-green deployment
+
+Author
+
+Mohana Sai Kanna
+
+
+Conclusion
+
+This project demonstrates practical DevOps implementation by integrating development, deployment, and monitoring into a single automated workflow. It reflects real-world practices and provides a strong foundation for production-ready systems.
